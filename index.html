@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planificador Temporal con Sonidos Personalizables</title>
+  <style>
+    :root {
+      --green-dark: #2E5B3A;
+      --blue-purple: #6A5ACD;
+      --gray-light: #F0F4F8;
+      --white: #FFFFFF;
+      --text-dark: #333333;
+      --border: #CCCCCC;
+      --hover-bg: #E8EEF4;
+      --rest-color: #FF6D00;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--gray-light);
+      color: var(--text-dark);
+      line-height: 1.6;
+      padding: 15px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .top-icons {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      display: flex;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.8);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: background 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: white;
+    }
+
+    .volume-slider-container {
+      position: absolute;
+      top: 55px;
+      right: 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 20;
+      display: none;
+      width: 180px;
+    }
+
+    .volume-slider-container.show {
+      display: block;
+    }
+
+    .sound-config-panel {
+      position: absolute;
+      top: 55px;
+      right: 15px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 20;
+      display: none;
+      width: 280px;
+      font-size: 0.85rem;
+    }
+
+    .sound-config-panel.show {
+      display: block;
+    }
+
+    .config-section {
+      margin-bottom: 12px;
+    }
+
+    .config-section h4 {
+      margin-bottom: 6px;
+      color: var(--green-dark);
+      font-size: 0.95rem;
+    }
+
+    .config-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 0;
+    }
+
+    .config-row label {
+      font-size: 0.85rem;
+    }
+
+    .config-row input {
+      width: 60px;
+      padding: 3px;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    header {
+      background: var(--green-dark);
+      color: var(--white);
+      padding: 20px 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    .input-section, .result-section, .timer-section {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 160px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid(var(--border));
+      border-radius: 6px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    button {
+      background: var(--blue-purple);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover:not(:disabled) {
+      background: #5a4abf;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .info-text {
+      font-size: 0.8rem;
+      color: #777;
+      margin-top: 3px;
+      text-align: center;
+    }
+
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    .timer-box {
+      background: linear-gradient(135deg, #2E5B3A 0%, #3a704a 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin: 15px 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .timer-value {
+      font-size: 2.2rem;
+      font-family: monospace;
+      margin: 10px 0;
+    }
+
+    .subgroup-info {
+      margin-top: 8px;
+      font-size: 1.05rem;
+    }
+
+    .groups-title {
+      background: var(--green-dark);
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 20px 0 10px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .group-card, .rest-card {
+      background: white;
+      border: 1px solid(var(--border));
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+
+    .rest-card {
+      border-left: 4px solid var(--rest-color);
+      background: #fff3e0;
+    }
+
+    .rest-label {
+      color: var(--rest-color);
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .form-row { flex-direction: column; align-items: stretch; }
+      .input-group { width: 100%; min-width: auto; }
+      .top-icons { position: static; margin-top: 10px; justify-content: center; }
+      .volume-slider-container,
+      .sound-config-panel {
+        position: static;
+        margin: 10px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-icons">
+      <div class="icon-btn" id="volumeIcon" title="Volumen">🔉</div>
+      <div class="icon-btn" id="configIcon" title="Configuración de sonido">⚙️</div>
+    </div>
+
+    <div class="volume-slider-container" id="volumeSliderContainer">
+      <label for="volumeSlider">Volumen: <span id="volumeValue">70%</span></label>
+      <input type="range" id="volumeSlider" min="0" max="100" value="70">
+    </div>
+
+    <div class="sound-config-panel" id="soundConfigPanel">
+      <h3>Configuración de Sonidos</h3>
+      
+      <div class="config-section">
+        <h4>Fin de Subgrupo</h4>
+        <div class="config-row">
+          <label>Número de pitidos:</label>
+          <input type="number" id="subgroupCount" min="1" max="5" value="3">
+        </div>
+        <div class="config-row">
+          <label>Frecuencia (Hz):</label>
+          <input type="number" id="subgroupFreq" min="200" max="2000" value="1000">
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h4>Fin de Grupo</h4>
+        <div class="config-row">
+          <label>Número de pitidos:</label>
+          <input type="number" id="groupCount" min="1" max="5" value="3">
+        </div>
+        <div class="config-row">
+          <label>Frecuencia (Hz):</label>
+          <input type="number" id="groupFreq" min="200" max="2000" value="500">
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h4>Descanso (Inicio)</h4>
+        <div class="config-row">
+          <label>Número de pitidos:</label>
+          <input type="number" id="restStartCount" min="1" max="5" value="4">
+        </div>
+        <div class="config-row">
+          <label>Frecuencia (Hz):</label>
+          <input type="number" id="restStartFreq" min="200" max="2000" value="250">
+        </div>
+        <div class="config-row">
+          <label>Duración (ms):</label>
+          <input type="number" id="restStartDur" min="50" max="500" value="125">
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h4>Descanso (Fin)</h4>
+        <div class="config-row">
+          <label>Número de pitidos:</label>
+          <input type="number" id="restEndCount" min="1" max="5" value="3">
+        </div>
+        <div class="config-row">
+          <label>Frecuencia (Hz):</label>
+          <input type="number" id="restEndFreq" min="200" max="2000" value="250">
+        </div>
+      </div>
+    </div>
+
+    <header>
+      <h1>⏱️ Planificador Temporal con Descansos</h1>
+    </header>
+
+    <div class="input-section">
+      <div class="form-row">
+        <div class="input-group">
+          <label for="horaIngresada">Hora objetivo (HH:mm)</label>
+          <input type="text" id="horaIngresada" placeholder="18:30">
+        </div>
+        <div class="input-group">
+          <label for="gruposInput">Grupos (X)</label>
+          <input type="number" id="gruposInput" placeholder="2" min="1" max="20">
+        </div>
+        <div class="input-group">
+          <label for="subgruposInput">Subgrupos por grupo (N)</label>
+          <input type="number" id="subgruposInput" placeholder="3" min="1" max="10">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group">
+          <label for="porcentajesInput">Porcentajes (ej: 50,30,20)</label>
+          <input type="text" id="porcentajesInput" placeholder="50,30,20">
+        </div>
+        <div class="input-group">
+          <label for="nombresInput">Nombres (opcional)</label>
+          <input type="text" id="nombresInput" placeholder="gas,geo,perfo">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group">
+          <!-- ✅ Actualizado placeholder y label -->
+          <label for="descansoDuracion">Duración de descanso (H:mm:ss)</label>
+          <input type="text" id="descansoDuracion" placeholder="0:05:30 o 45">
+        </div>
+        <div class="input-group">
+          <label for="descansoCantidad">Número de descansos (M)</label>
+          <input type="number" id="descansoCantidad" placeholder="1" min="0" max="20">
+          <div class="info-text">0 = sin descanso</div>
+        </div>
+      </div>
+
+      <button onclick="calcularRangosYDuraciones()">Calcular Plan</button>
+    </div>
+
+    <div class="result-section">
+      <div id="resultado"></div>
+      <div id="grupos"></div>
+    </div>
+
+    <div class="timer-section">
+      <div class="timer-box" id="timerBox" style="display:none;">
+        <div>Elemento Actual:</div>
+        <div class="subgroup-info" id="subgroupLabel">Cargando...</div>
+        <div class="timer-value" id="timerDisplay">--:--:--</div>
+        <div>Restante</div>
+      </div>
+      <button id="startBtn" onclick="iniciarTemporizador()" disabled>Iniciar Temporizador</button>
+      <button id="pauseBtn" onclick="pausarTemporizador()" disabled style="margin-left:8px;">Pausar</button>
+      <button id="resetBtn" onclick="reiniciarTemporizador()" disabled style="margin-left:8px;">Reiniciar</button>
+    </div>
+  </div>
+
+  <script>
+    const soundConfig = {
+      subgroup: { count: 3, freq: 1000 },
+      group: { count: 3, freq: 500 },
+      restStart: { count: 4, freq: 250, dur: 125 },
+      restEnd: { count: 3, freq: 250 }
+    };
+
+    let currentIndex = 0;
+    let tiempoRestante = 0;
+    let intervalId = null;
+    let audioContext = null;
+    let globalGainNode = null;
+    let isPaused = false;
+    let volumeLevel = 0.7;
+
+    function crearAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        globalGainNode = audioContext.createGain();
+        globalGainNode.gain.value = volumeLevel;
+        globalGainNode.connect(audioContext.destination);
+      }
+    }
+
+    function reproducirPitido(frecuencia, duracion = 250) {
+      if (!audioContext) return;
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = frecuencia;
+      gain.gain.setValueAtTime(0.1 * volumeLevel, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01 * volumeLevel, audioContext.currentTime + duracion / 1000);
+      osc.connect(gain);
+      gain.connect(globalGainNode);
+      osc.start();
+      osc.stop(audioContext.currentTime + duracion / 1000);
+    }
+
+    function reproducirNPitidos(frecuencia, count, duracion = 250) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          reproducirPitido(frecuencia, duracion);
+        }, i * 300);
+      }
+    }
+
+    function reproducirNPitidosRapidos(frecuencia, count, duracion, intervalo = 200) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          reproducirPitido(frecuencia, duracion);
+        }, i * intervalo);
+      }
+    }
+
+    function cargarConfiguracion() {
+      soundConfig.subgroup.count = parseInt(document.getElementById('subgroupCount').value) || 3;
+      soundConfig.subgroup.freq = parseInt(document.getElementById('subgroupFreq').value) || 1000;
+      soundConfig.group.count = parseInt(document.getElementById('groupCount').value) || 3;
+      soundConfig.group.freq = parseInt(document.getElementById('groupFreq').value) || 500;
+      soundConfig.restStart.count = parseInt(document.getElementById('restStartCount').value) || 4;
+      soundConfig.restStart.freq = parseInt(document.getElementById('restStartFreq').value) || 250;
+      soundConfig.restStart.dur = parseInt(document.getElementById('restStartDur').value) || 125;
+      soundConfig.restEnd.count = parseInt(document.getElementById('restEndCount').value) || 3;
+      soundConfig.restEnd.freq = parseInt(document.getElementById('restEndFreq').value) || 250;
+    }
+
+    function formatTime(date) {
+      return date.toTimeString().slice(0, 5);
+    }
+
+    function formatDuration(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return `${h}h ${m}m ${s}s`;
+    }
+
+    function formatTimer(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+    }
+
+    // ✅ NUEVA FUNCIÓN: Soporta H:mm:ss, M:ss, o ss
+    function parseTiempoConSegundos(texto) {
+      const limpio = texto.trim();
+      if (!limpio) return null;
+
+      // Caso 1: H:mm:ss
+      if (limpio.split(':').length === 3) {
+        const [h, m, s] = limpio.split(':').map(Number);
+        if (isNaN(h) || isNaN(m) || isNaN(s) || h < 0 || m < 0 || m >= 60 || s < 0 || s >= 60) return null;
+        return (h * 3600 + m * 60 + s) * 1000;
+      }
+      // Caso 2: M:ss o H:mm
+      else if (limpio.split(':').length === 2) {
+        const [a, b] = limpio.split(':').map(Number);
+        if (isNaN(a) || isNaN(b) || a < 0 || b < 0 || b >= 60) return null;
+        return (a * 60 + b) * 1000;
+      }
+      // Caso 3: solo segundos
+      else {
+        const s = parseInt(limpio);
+        if (isNaN(s) || s < 0) return null;
+        return s * 1000;
+      }
+    }
+
+    function calcularRangosYDuraciones() {
+      const inputHora = document.getElementById("horaIngresada").value.trim();
+      const inputGrupos = document.getElementById("gruposInput").value.trim();
+      const inputSubgrupos = document.getElementById("subgruposInput").value.trim();
+      const inputPorcentajes = document.getElementById("porcentajesInput").value.trim();
+      const inputNombres = document.getElementById("nombresInput").value.trim();
+      const inputDescansoDur = document.getElementById("descansoDuracion").value.trim();
+      const inputDescansoCant = document.getElementById("descansoCantidad").value.trim();
+
+      const resultadoDiv = document.getElementById("resultado");
+      const gruposDiv = document.getElementById("grupos");
+      const startBtn = document.getElementById("startBtn");
+
+      const regexHora = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!regexHora.test(inputHora)) {
+        resultadoDiv.innerHTML = `<div class="error-message">❌ Hora objetivo inválida. Usa HH:mm.</div>`;
+        gruposDiv.innerHTML = "";
+        startBtn.disabled = true;
+        return;
+      }
+
+      const X = parseInt(inputGrupos);
+      const N = parseInt(inputSubgrupos);
+      if (isNaN(X) || X < 1 || X > 20 || isNaN(N) || N < 1 || N > 10) {
+        resultadoDiv.innerHTML = `<div class="error-message">❌ Grupos o subgrupos fuera de rango.</div>`;
+        gruposDiv.innerHTML = "";
+        startBtn.disabled = true;
+        return;
+      }
+
+      const porcentajesStr = inputPorcentajes.split(',').map(s => s.trim()).filter(s => s !== "");
+      const porcentajes = porcentajesStr.map(p => parseFloat(p));
+      if (porcentajes.length !== N || porcentajes.some(isNaN)) {
+        resultadoDiv.innerHTML = `<div class="error-message">❌ Porcentajes inválidos.</div>`;
+        gruposDiv.innerHTML = "";
+        startBtn.disabled = true;
+        return;
+      }
+      const suma = porcentajes.reduce((a, b) => a + b, 0);
+      if (Math.abs(suma - 100) > 0.1) {
+        resultadoDiv.innerHTML = `<div class="error-message">❌ Porcentajes deben sumar 100%.</div>`;
+        gruposDiv.innerHTML = "";
+        startBtn.disabled = true;
+        return;
+      }
+
+      let nombresSub = inputNombres ? inputNombres.split(',').map(s => s.trim()).filter(s => s !== "") : null;
+      if (nombresSub && nombresSub.length !== N) {
+        resultadoDiv.innerHTML = `<div class="error-message">❌ Nombres deben coincidir con número de subgrupos.</div>`;
+        gruposDiv.innerHTML = "";
+        startBtn.disabled = true;
+        return;
+      }
+      if (!nombresSub) {
+        nombresSub = Array.from({length: N}, (_, i) => `Sub${i + 1}`);
+      }
+
+      const M = parseInt(inputDescansoCant) || 0;
+      let duracionDescansoMs = 0;
+      if (M > 0) {
+        // ✅ Usamos la nueva función
+        const parsed = parseTiempoConSegundos(inputDescansoDur);
+        if (parsed === null) {
+          resultadoDiv.innerHTML = `<div class="error-message">❌ Formato inválido. Usa H:mm:ss, M:ss o ss.</div>`;
+          gruposDiv.innerHTML = "";
+          startBtn.disabled = true;
+          return;
+        }
+        duracionDescansoMs = parsed;
+      }
+
+      const inicio = new Date();
+      const [h, m] = inputHora.split(':').map(Number);
+      let fin = new Date();
+      fin.setHours(h, m, 0, 0);
+      if (fin <= inicio) fin.setDate(fin.getDate() + 1);
+      const totalMs = fin.getTime() - inicio.getTime();
+      if (totalMs <= 0) {
+        resultadoDiv.innerHTML = `<div class="error-message">❌ Hora objetivo debe ser futura.</div>`;
+        gruposDiv.innerHTML = "";
+        startBtn.disabled = true;
+        return;
+      }
+
+      const totalDescansoMs = M * duracionDescansoMs;
+      if (totalDescansoMs >= totalMs) {
+        resultadoDiv.innerHTML = `<div class="error-message">❌ El tiempo de descanso supera el intervalo total.</div>`;
+        gruposDiv.innerHTML = "";
+        startBtn.disabled = true;
+        return;
+      }
+
+      const tiempoUtilMs = totalMs - totalDescansoMs;
+
+      resultadoDiv.innerHTML = `<div class="total-time" style="background: linear-gradient(135deg, #6A5ACD 0%, #5a4abf 100%); color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold;">
+        ⏱️ Intervalo total: ${formatTime(inicio)} → ${formatTime(fin)} (${formatDuration(totalMs)})
+      </div>`;
+
+      const factorTotal = Math.pow(2, X) - 1;
+      const tMs = tiempoUtilMs / factorTotal;
+
+      let subgrupos = [];
+      let cursor = 0;
+      for (let i = 0; i < X; i++) {
+        const duracionGrupoMs = tMs * Math.pow(2, i);
+        for (let j = 0; j < N; j++) {
+          const pct = porcentajes[j];
+          const duracionSubMs = duracionGrupoMs * (pct / 100);
+          subgrupos.push({
+            nombre: nombresSub[j],
+            duracionMs: duracionSubMs,
+            grupoIndex: i,
+            esUltimoDelGrupo: (j === N - 1),
+            inicioRel: cursor,
+            finRel: cursor + duracionSubMs
+          });
+          cursor += duracionSubMs;
+        }
+      }
+
+      let plan = [];
+      if (M === 0) {
+        plan = subgrupos.map(sg => ({ ...sg, tipo: 'subgrupo' }));
+      } else {
+        const puntosInsercion = [];
+        for (let i = 0; i < subgrupos.length - 1; i++) {
+          puntosInsercion.push(i);
+        }
+
+        if (puntosInsercion.length === 0) {
+          resultadoDiv.innerHTML = `<div class="error-message">❌ No hay suficientes subgrupos para insertar ${M} descansos.</div>`;
+          gruposDiv.innerHTML = "";
+          startBtn.disabled = true;
+          return;
+        }
+
+        const posiciones = [];
+        if (M <= puntosInsercion.length) {
+          for (let i = 0; i < M; i++) {
+            const t = (i + 1) / (M + 1);
+            const index = Math.round(t * (puntosInsercion.length - 1));
+            posiciones.push(puntosInsercion[index]);
+          }
+          const unicos = [...new Set(posiciones)].sort((a, b) => a - b);
+          while (unicos.length < M && puntosInsercion.length > unicos.length) {
+            let mejor = puntosInsercion[0];
+            let mejorDist = Infinity;
+            for (const p of puntosInsercion) {
+              if (unicos.includes(p)) continue;
+              const dist = unicos.reduce((min, u) => Math.min(min, Math.abs(p - u)), Infinity);
+              if (dist < mejorDist) {
+                mejorDist = dist;
+                mejor = p;
+              }
+            }
+            unicos.push(mejor);
+            unicos.sort((a, b) => a - b);
+          }
+          const elegidos = unicos.slice(0, M);
+          let j = 0;
+          for (let i = 0; i < subgrupos.length; i++) {
+            plan.push({ ...subgrupos[i], tipo: 'subgrupo' });
+            if (elegidos.includes(i)) {
+              plan.push({
+                nombre: "⏸️ Descanso",
+                duracionMs: duracionDescansoMs,
+                tipo: 'descanso'
+              });
+            }
+          }
+        } else {
+          resultadoDiv.innerHTML = `<div class="error-message">❌ Demasiados descansos para el número de subgrupos.</div>`;
+          gruposDiv.innerHTML = "";
+          startBtn.disabled = true;
+          return;
+        }
+      }
+
+      let tiempoActual = inicio.getTime();
+      for (const item of plan) {
+        const inicioAbs = new Date(tiempoActual);
+        tiempoActual += item.duracionMs;
+        const finAbs = new Date(tiempoActual);
+        item.inicio = inicioAbs;
+        item.fin = finAbs;
+      }
+
+      window.planCompleto = plan;
+
+      let html = '<div class="groups-title">Plan Detallado</div>';
+      let i = 0;
+      while (i < plan.length) {
+        const item = plan[i];
+        if (item.tipo === 'subgrupo') {
+          const grupoIdx = item.grupoIndex;
+          let j = i;
+          let grupoInicio = item.inicio;
+          let grupoFin = item.fin;
+          html += `<div class="group-card"><strong>Grupo ${grupoIdx + 1}: ${formatTime(grupoInicio)} → `;
+          while (j < plan.length && plan[j].tipo === 'subgrupo' && plan[j].grupoIndex === grupoIdx) {
+            grupoFin = plan[j].fin;
+            j++;
+          }
+          html += `${formatTime(grupoFin)}</strong><br>`;
+          for (let k = i; k < j; k++) {
+            const sg = plan[k];
+            html += `• ${sg.nombre} (${sg.esUltimoDelGrupo ? '✅' : ''}): ${formatTime(sg.inicio)} → ${formatTime(sg.fin)} (${formatDuration(sg.duracionMs)})<br>`;
+          }
+          html += `</div>`;
+          i = j;
+        } else {
+          html += `<div class="rest-card"><span class="rest-label">${item.nombre}</span>: ${formatTime(item.inicio)} → ${formatTime(item.fin)} (${formatDuration(item.duracionMs)})</div>`;
+          i++;
+        }
+      }
+      gruposDiv.innerHTML = html;
+      startBtn.disabled = false;
+    }
+
+    function iniciarTemporizador() {
+      crearAudioContext();
+      currentIndex = 0;
+      isPaused = false;
+      document.getElementById("startBtn").disabled = true;
+      document.getElementById("pauseBtn").disabled = false;
+      document.getElementById("resetBtn").disabled = false;
+      document.getElementById("timerBox").style.display = "block";
+      avanzarAlSiguiente();
+    }
+
+    function avanzarAlSiguiente() {
+      if (currentIndex >= window.planCompleto.length) {
+        document.getElementById("timerDisplay").textContent = "00:00:00";
+        document.getElementById("subgroupLabel").textContent = "✅ ¡Plan completado!";
+        intervalId = null;
+        document.getElementById("pauseBtn").disabled = true;
+        return;
+      }
+
+      const item = window.planCompleto[currentIndex];
+      tiempoRestante = Math.floor(item.duracionMs / 1000);
+
+      let etiqueta = "";
+      if (item.tipo === 'descanso') {
+        let count = 0;
+        for (let i = 0; i <= currentIndex; i++) {
+          if (window.planCompleto[i].tipo === 'descanso') count++;
+        }
+        etiqueta = `⏸️ Descanso ${count}`;
+      } else {
+        const grupoNum = item.grupoIndex + 1;
+        etiqueta = `Grupo ${grupoNum} • ${item.nombre}`;
+      }
+      document.getElementById("subgroupLabel").textContent = etiqueta;
+
+      document.getElementById("timerDisplay").textContent = formatTimer(tiempoRestante);
+
+      // ✅ PRIORIDAD MÁXIMA: inicio de descanso
+      if (item.tipo === 'descanso') {
+        reproducirNPitidosRapidos(
+          soundConfig.restStart.freq,
+          soundConfig.restStart.count,
+          soundConfig.restStart.dur
+        );
+      }
+
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(() => {
+        if (isPaused) return;
+        tiempoRestante--;
+        document.getElementById("timerDisplay").textContent = formatTimer(tiempoRestante);
+        if (tiempoRestante <= 0) {
+          clearInterval(intervalId);
+
+          // ✅ JERARQUÍA DE SONIDOS AL TERMINAR
+          if (item.tipo === 'descanso') {
+            // Prioridad: fin de descanso
+            reproducirNPitidos(soundConfig.restEnd.freq, soundConfig.restEnd.count);
+          } else if (item.esUltimoDelGrupo) {
+            // Prioridad: fin de grupo (reemplaza fin de subgrupo)
+            reproducirNPitidos(soundConfig.group.freq, soundConfig.group.count);
+          } else {
+            // Solo fin de subgrupo
+            reproducirNPitidos(soundConfig.subgroup.freq, soundConfig.subgroup.count);
+          }
+
+          currentIndex++;
+          setTimeout(avanzarAlSiguiente, 1000);
+        }
+      }, 1000);
+    }
+
+    function pausarTemporizador() {
+      isPaused = !isPaused;
+      document.getElementById("pauseBtn").textContent = isPaused ? "Reanudar" : "Pausar";
+    }
+
+    function reiniciarTemporizador() {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = null;
+      isPaused = false;
+      document.getElementById("timerBox").style.display = "none";
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("pauseBtn").disabled = true;
+      document.getElementById("resetBtn").disabled = true;
+      document.getElementById("pauseBtn").textContent = "Pausar";
+    }
+
+    document.getElementById('volumeIcon').addEventListener('click', function() {
+      const panel = document.getElementById('volumeSliderContainer');
+      const configPanel = document.getElementById('soundConfigPanel');
+      configPanel.classList.remove('show');
+      panel.classList.toggle('show');
+    });
+
+    document.getElementById('configIcon').addEventListener('click', function() {
+      const panel = document.getElementById('soundConfigPanel');
+      const volPanel = document.getElementById('volumeSliderContainer');
+      volPanel.classList.remove('show');
+      panel.classList.toggle('show');
+    });
+
+    document.getElementById('volumeSlider').addEventListener('input', function() {
+      volumeLevel = this.value / 100;
+      document.getElementById('volumeValue').textContent = this.value + '%';
+      if (globalGainNode) {
+        globalGainNode.gain.value = volumeLevel;
+      }
+    });
+
+    document.getElementById('soundConfigPanel').addEventListener('input', cargarConfiguracion);
+
+    document.addEventListener('click', function(e) {
+      const volIcon = document.getElementById('volumeIcon');
+      const volPanel = document.getElementById('volumeSliderContainer');
+      const confIcon = document.getElementById('configIcon');
+      const confPanel = document.getElementById('soundConfigPanel');
+
+      if (!volIcon.contains(e.target) && !volPanel.contains(e.target)) {
+        volPanel.classList.remove('show');
+      }
+      if (!confIcon.contains(e.target) && !confPanel.contains(e.target)) {
+        confPanel.classList.remove('show');
+      }
+    })
+  </script>
+</body>
+</html>
